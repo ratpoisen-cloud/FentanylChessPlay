@@ -238,7 +238,7 @@ async function initGame(roomId) {
         onDrop: handleDrop,
         position: 'start',
         moveSpeed: 'slow',
-        pieceTheme: 'https://chessboardjs.com/img/chesspieces/alpha/{piece}.png'
+        pieceTheme: 'https://chessboardjs.com/img/chesspieces/neo/{piece}.png'
     });
     
     if (playerColor === 'b') board.orientation('black');
