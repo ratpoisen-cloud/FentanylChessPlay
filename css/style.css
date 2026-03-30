@@ -336,7 +336,7 @@ body {
     transform: translateY(-2px);
 }
 #myBoard {
-    background: url('./assets/img/middle-earth-map.jpg') center/cover no-repeat;
+    background: url('assets/img/middle-earth-map.jpg') center/cover no-repeat;
     border: 8px solid #3b2b1f;
     box-shadow: 0 0 30px rgba(0,0,0,0.7);
 }
