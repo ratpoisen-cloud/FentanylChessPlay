@@ -809,3 +809,75 @@ body.theme-middle-earth #myBoard {
     border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(163, 193, 143, 0.18);
 }
+/* ===== НАСТРОЙКИ ДОСКИ ===== */
+.board-settings-bar {
+    width: 100%;
+    max-width: 660px;
+    margin: 0 auto 14px;
+    display: flex;
+    justify-content: flex-end;
+    position: relative;
+}
+
+.board-settings-btn {
+    min-width: 170px;
+}
+
+.board-settings-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 220;
+    width: min(280px, 92vw);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 14px;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.board-settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.board-settings-group label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.board-settings-select {
+    width: 100%;
+    padding: 10px 12px;
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 12px;
+    font-size: 0.92rem;
+    outline: none;
+}
+
+.board-settings-select:focus {
+    border-color: var(--accent);
+}
+
+@media (max-width: 600px) {
+    .board-settings-bar {
+        justify-content: stretch;
+    }
+
+    .board-settings-btn {
+        width: 100%;
+    }
+
+    .board-settings-menu {
+        left: 0;
+        right: 0;
+        width: 100%;
+    }
+}
