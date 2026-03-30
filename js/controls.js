@@ -8,11 +8,21 @@ window.setupGameControls = function(gameRef, roomId) {
     const moveResult = window.game.move({
         from: window.pendingMove.from,
         to: window.pendingMove.to,
-        promotion: 'q'
+        promotion: window.pendingMove.promotion || 'q'
     });
-    if (moveResult) {
-    highlightLastMove(moveResult);
-}
+    
+    if (!moveResult) {
+        window.pendingMove = null;
+        document.getElementById('confirm-move-box')?.classList.add('hidden');
+        window.updateBoardPosition(window.game.fen(), true);
+        window.clearSelection();
+        return;
+    }
+    
+    if (window.highlightLastMove) {
+        window.highlightLastMove(moveResult);
+    }
+    
     window.updateBoardPosition(window.game.fen(), true);
     
     const now = Date.now();
@@ -20,7 +30,7 @@ window.setupGameControls = function(gameRef, roomId) {
         pgn: window.game.pgn(), 
         fen: window.game.fen(), 
         turn: window.game.turn(), 
-        lastMove: Date.now(),
+        lastMove: now,
         lastMoveTime: now  // Добавляем время последнего хода для сортировки
     };
     
