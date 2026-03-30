@@ -9,7 +9,8 @@ window.THEMES = [
     'theme-dark',
     'theme-marble',
     'theme-chesscom',
-    'theme-lime'
+    'theme-lime',
+    'theme-middle-earth'
 ];
 
 // Установка темы
