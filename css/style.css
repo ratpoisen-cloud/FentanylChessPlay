@@ -30,8 +30,6 @@
     --font-size-md: 1rem;
     --font-size-lg: 1.1rem;
     --font-size-xl: 1.8rem;
-    /* ===== BOARD FRAME ===== */
- /* fallback (classic dark square) */
 }
 
 * {
@@ -132,7 +130,8 @@ body {
     background: var(--card);
     border-color: var(--accent);
 }
-/* Кнопка "Предложить ничью" - кремовый цвет */
+
+/* Кнопка "Предложить ничью" */
 .btn-draw {
     background: #e8dcc8;
     color: #3a3a2a;
@@ -144,6 +143,7 @@ body {
     transform: translateY(-1.5px);
     box-shadow: 0 4px 12px rgba(200, 180, 140, 0.3);
 }
+
 .btn-danger {
     background: var(--danger);
     color: white;
@@ -195,7 +195,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* ===== ЛОББИ (КОНТЕЙНЕР СПИСКА ИГР) ===== */
+/* ===== ЛОББИ ===== */
 .games-grid {
     display: grid;
     gap: 12px;
@@ -204,7 +204,6 @@ body {
     overflow-y: auto;
 }
 
-/* ===== КАРТОЧКА ИГРЫ В ЛОББИ (ФИНАЛЬНАЯ ВЕРСИЯ) ===== */
 .game-item {
     background: #1a1a1a;
     padding: 16px 20px;
@@ -274,7 +273,6 @@ body {
     align-items: center;
 }
 
-/* Кнопка "Играть" - светло-зеленая, как "Создать новую игру" */
 .play-btn {
     min-width: 80px;
     background: var(--accent);
@@ -293,7 +291,6 @@ body {
     transform: translateY(-1px);
 }
 
-/* Кнопка "Удалить" - красная */
 .delete-btn {
     background: var(--danger);
     color: white;
@@ -323,7 +320,6 @@ body {
 }
 
 /* ===== ИГРОВАЯ ОБЛАСТЬ ===== */
-/* Игровая область - АДАПТИВНАЯ ДОСКА */
 .game-layout {
     display: flex;
     gap: 24px;
@@ -343,7 +339,9 @@ body {
     width: 100%;
     max-width: 650px;
     margin: 0 auto;
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
+
 #myBoard img {
     width: 100%;
     height: auto;
@@ -354,7 +352,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* ===== СТАТУС-ХЕДЕР НАД ДОСКОЙ ===== */
+/* ===== СТАТУС-ХЕДЕР ===== */
 .game-status-header {
     width: 100%;
     max-width: 660px;
@@ -415,6 +413,7 @@ body {
     border: 1px solid rgba(163, 193, 143, 0.25);
     transition: all 0.3s ease;
 }
+
 .turn-status.my-turn {
     background: linear-gradient(135deg, rgba(163, 193, 143, 0.35), rgba(163, 193, 143, 0.15));
     border-color: var(--accent);
@@ -448,7 +447,7 @@ body {
     }
 }
 
-/* ===== ПОДСВЕТКА ФИГУР И ХОДОВ ===== */
+/* ===== ПОДСВЕТКА ХОДОВ ===== */
 .highlight-selected {
     position: relative;
     box-shadow: inset 0 0 0 4px rgba(163, 193, 143, 0.85) !important;
@@ -572,7 +571,7 @@ body {
     transform: scale(0.95);
 }
 
-/* ===== КНОПКИ УПРАВЛЕНИЯ В ИГРЕ ===== */
+/* ===== КНОПКИ УПРАВЛЕНИЯ ===== */
 .controls {
     display: flex;
     gap: 12px;
@@ -585,6 +584,7 @@ body {
     margin-left: auto;
     margin-right: auto;
 }
+
 .controls button {
     transition: all 0.15s ease;
 }
@@ -751,7 +751,7 @@ body {
     gap: var(--space-12);
 }
 
-/* ===== БУКВЕННЫЙ АВАТАР ===== */
+/* ===== АВАТАР ===== */
 .letter-avatar {
     width: 40px;
     height: 40px;
@@ -806,7 +806,6 @@ body {
         padding: 12px 16px;
     }
     
-    /* Адаптация лобби для мобильных */
     .game-item {
         flex-direction: column;
         align-items: flex-start;
@@ -835,67 +834,50 @@ body {
     position: relative;
 }
 
-
 .last-move {
     box-shadow: inset 0 0 0 4px rgba(100, 180, 255, 0.6);
     border-radius: 4px;
 }
-/* ===== ТЕМЫ ДОСКИ ===== */
 
-/* Классическая */
+/* ===== ТЕМЫ ДОСКИ ===== */
 body.theme-classic .white-1e1d7 { background-color: #f0f4e8 !important; }
 body.theme-classic .black-3c85d { background-color: #3e5234 !important; }
-body.theme-classic {  }
 
-/* Лесная */
 body.theme-forest .white-1e1d7 { background-color: #e8eddc !important; }
 body.theme-forest .black-3c85d { background-color: #4c6b3c !important; }
-body.theme-forest {  }
 
-/* Океан */
 body.theme-ocean .white-1e1d7 { background-color: #dceaf4 !important; }
 body.theme-ocean .black-3c85d { background-color: #3c5f77 !important; }
-body.theme-ocean {  }
 
-/* Тёмная */
 body.theme-dark .white-1e1d7 { background-color: #8c8c8c !important; }
 body.theme-dark .black-3c85d { background-color: #2f2f2f !important; }
-body.theme-dark {  }
 
-/* Мрамор */
 body.theme-marble .white-1e1d7 { background-color: #f3f3f1 !important; }
 body.theme-marble .black-3c85d { background-color: #8a8f95 !important; }
-body.theme-marble {  }
 
-/* Chess.com-подобная */
 body.theme-chesscom .white-1e1d7 { background-color: #eeeed2 !important; }
 body.theme-chesscom .black-3c85d { background-color: #769656 !important; }
-body.theme-chesscom {  }
 
-/* Лайм */
 body.theme-lime .white-1e1d7 { background-color: #f2ffe6 !important; }
 body.theme-lime .black-3c85d { background-color: #8db600 !important; }
-body.theme-lime {  }
 
-/* Middle-earth */
 body.theme-middle-earth .white-1e1d7 { background-color: rgba(240, 217, 181, 0.82) !important; }
 body.theme-middle-earth .black-3c85d { background-color: rgba(181, 136, 99, 0.82) !important; }
-body.theme-middle-earth {  }
+
 body.theme-middle-earth #myBoard {
     background: url('../assets/img/middle-earth-map.jpg') center/cover no-repeat;
-    border: 8px solid #3b2b1f;
     box-shadow:
         inset 0 0 20px rgba(0,0,0,0.45),
         0 10px 30px rgba(0,0,0,0.45);
     filter: sepia(0.22) contrast(1.05);
 }
 
-/* Аккуратный активный стиль кнопок тем */
+/* Активная тема */
 .theme-btn.active {
     border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(163, 193, 143, 0.18);
-
 }
+
 /* ===== НАСТРОЙКИ ДОСКИ ===== */
 .board-settings-bar {
     width: 100%;
@@ -968,8 +950,8 @@ body.theme-middle-earth #myBoard {
         width: 100%;
     }
 }
-/* ===== НОВЫЙ LAYOUT ИГРОВОЙ КОМНАТЫ ===== */
 
+/* ===== НОВЫЙ LAYOUT ИГРОВОЙ КОМНАТЫ ===== */
 .game-shell {
     width: 100%;
     display: flex;
@@ -1052,7 +1034,7 @@ body.theme-middle-earth #myBoard {
     gap: 14px;
 }
 
-/* ===== КНОПКИ УПРАВЛЕНИЯ ПОД ДОСКОЙ ===== */
+/* ===== КНОПКИ ПОД ДОСКОЙ ===== */
 .controls.controls-split {
     width: 100%;
     max-width: 660px;
@@ -1191,11 +1173,5 @@ body.theme-middle-earth #myBoard {
 
     .share-container .btn {
         width: 100%;
-    }
-}
-@media (max-width: 600px) {
-    #myBoard {
-        width: 100%;
-        max-width: 100%;
     }
 }
