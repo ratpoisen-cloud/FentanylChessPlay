@@ -7,22 +7,22 @@
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link rel="stylesheet" href="css/style.css">
     <!-- PWA метатеги -->
-<link rel="manifest" href="/manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Chess Online">
-<link rel="apple-touch-icon" href="/assets/icon-192x192.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Chess Online">
+    <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
 
-<!-- Service Worker регистрация -->
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('SW registered:', reg))
-      .catch(err => console.log('SW error:', err));
-  });
-}
-</script>
+    <!-- Service Worker регистрация -->
+    <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('SW registered:', reg))
+          .catch(err => console.log('SW error:', err));
+      });
+    }
+    </script>
 </head>
 <body>
     <div class="main-container">
@@ -70,6 +70,7 @@ if ('serviceWorker' in navigator) {
                                     ⚙
                                 </button>
                             </div>
+                        </div>
 
                         <!-- ===== НАСТРОЙКИ ДОСКИ ===== -->
                         <div class="board-settings-bar">
@@ -94,6 +95,8 @@ if ('serviceWorker' in navigator) {
                                         <option value="default">Скоро будет</option>
                                     </select>
                                 </div>
+                            </div>
+                        </div>
                         
                         <div class="board-wrapper">
 
@@ -115,6 +118,7 @@ if ('serviceWorker' in navigator) {
                                         <button id="takeback-reject" class="btn-round btn-danger">✕</button>
                                     </div>
                                 </div>
+                            </div>
 
                             <!-- ===== ОВЕРЛЕЙ НИЧЬЕЙ ===== -->
                             <div id="draw-request-box" class="confirm-overlay confirm-overlay-plain hidden">
@@ -125,6 +129,7 @@ if ('serviceWorker' in navigator) {
                                         <button id="draw-reject" class="btn-round btn-danger">✕</button>
                                     </div>
                                 </div>
+                            </div>
 
                         </div>
 
@@ -136,15 +141,17 @@ if ('serviceWorker' in navigator) {
                             </div>
 
                             <div class="controls-group controls-risky">
-                               <button id="draw-btn" class="btn btn-draw btn-control-size">Предложить ничью</button>
+                                <button id="draw-btn" class="btn btn-draw btn-control-size">Предложить ничью</button>
                                 <button id="resign-btn" class="btn btn-danger btn-control-size">Сдаться</button>
                             </div>
+                        </div>
 
                         <!-- ===== НИЖНЯЯ ПАНЕЛЬ ПАРТИИ ===== -->
                         <div class="game-bottom-panel">
                             <div class="moves-card">
                                 <h3>История ходов</h3>
                                 <div id="move-list" class="move-list-content"></div>
+                            </div>
                             
                             <div class="share-box game-share-box">
                                 <small>Пригласить друга</small>
@@ -152,6 +159,8 @@ if ('serviceWorker' in navigator) {
                                     <input type="text" id="room-link" readonly>
                                     <button id="share-btn" class="btn btn-primary">Поделиться</button>
                                 </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -207,48 +216,48 @@ if ('serviceWorker' in navigator) {
     <script src="js/game-core.js"></script>
     <script src="js/app.js"></script>
 
-<script>
-    // Проверка загрузки Firebase функций
-    setTimeout(() => {
-        if (typeof ref === 'undefined') {
-            console.error('Firebase functions not loaded!');
-        } else {
-            console.log('Firebase loaded successfully');
-        }
-    }, 1000);
+    <script>
+        // Проверка загрузки Firebase функций
+        setTimeout(() => {
+            if (typeof ref === 'undefined') {
+                console.error('Firebase functions not loaded!');
+            } else {
+                console.log('Firebase loaded successfully');
+            }
+        }, 1000);
 
-    // Настройки доски
-    window.addEventListener('DOMContentLoaded', () => {
-        const toggleBtn = document.getElementById('board-settings-toggle');
-        const menu = document.getElementById('board-settings-menu');
-        const themeSelect = document.getElementById('theme-select');
+        // Настройки доски
+        window.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.getElementById('board-settings-toggle');
+            const menu = document.getElementById('board-settings-menu');
+            const themeSelect = document.getElementById('theme-select');
 
-        if (toggleBtn && menu) {
-            toggleBtn.addEventListener('click', () => {
-                menu.classList.toggle('hidden');
-            });
+            if (toggleBtn && menu) {
+                toggleBtn.addEventListener('click', () => {
+                    menu.classList.toggle('hidden');
+                });
 
-            document.addEventListener('click', (e) => {
-                const insideMenu = menu.contains(e.target);
-                const insideButton = toggleBtn.contains(e.target);
+                document.addEventListener('click', (e) => {
+                    const insideMenu = menu.contains(e.target);
+                    const insideButton = toggleBtn.contains(e.target);
 
-                if (!insideMenu && !insideButton) {
-                    menu.classList.add('hidden');
-                }
-            });
-        }
+                    if (!insideMenu && !insideButton) {
+                        menu.classList.add('hidden');
+                    }
+                });
+            }
 
-        if (themeSelect) {
-            const savedTheme = localStorage.getItem('chess-theme') || 'theme-classic';
-            themeSelect.value = savedTheme;
+            if (themeSelect) {
+                const savedTheme = localStorage.getItem('chess-theme') || 'theme-classic';
+                themeSelect.value = savedTheme;
 
-            themeSelect.addEventListener('change', (e) => {
-                if (window.setTheme) {
-                    window.setTheme(e.target.value);
-                }
-            });
-        }
-    });
-</script>
+                themeSelect.addEventListener('change', (e) => {
+                    if (window.setTheme) {
+                        window.setTheme(e.target.value);
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
