@@ -1,21 +1,19 @@
 <!DOCTYPE html>
-<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fentanyl Chess Online</title>
+
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="/favicon.ico" sizes="any">
 
-    <!-- PWA метатеги -->
     <link rel="manifest" href="/manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Chess Online">
     <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
 
-    <!-- Service Worker регистрация -->
     <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
