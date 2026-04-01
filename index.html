@@ -94,9 +94,11 @@
 
                                     <div class="board-settings-group">
                                         <label for="piece-set-select">Фигурки</label>
-                                        <select id="piece-set-select" class="board-settings-select" disabled>
-                                            <option value="default">Скоро будет</option>
+                                        <select id="piece-set-select" class="board-settings-select">
+                                            <option value="alpha">Classic (Alpha CDN)</option>
+                                            <option value="custom">Custom (из assets)</option>
                                         </select>
+                                        <small>Для custom загрузите PNG-файлы в <code>assets/pieces/custom/</code> с именами: wP, wR, wN, wB, wQ, wK, bP, bR, bN, bB, bQ, bK.</small>
                                     </div>
                                 </div>
                             </div>
@@ -236,6 +238,7 @@
             const toggleBtn = document.getElementById('board-settings-toggle');
             const menu = document.getElementById('board-settings-menu');
             const themeSelect = document.getElementById('theme-select');
+            const pieceSetSelect = document.getElementById('piece-set-select');
 
             if (toggleBtn && menu) {
                 toggleBtn.addEventListener('click', () => {
@@ -261,6 +264,10 @@
                         window.setTheme(e.target.value);
                     }
                 });
+            }
+
+            if (pieceSetSelect && window.initPieceSetControls) {
+                window.initPieceSetControls(pieceSetSelect);
             }
         });
     </script>

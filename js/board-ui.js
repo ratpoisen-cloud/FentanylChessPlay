@@ -1,9 +1,31 @@
 // ==================== УПРАВЛЕНИЕ ДОСКОЙ ====================
 // Отвечает за: инициализацию доски, подсветку клеток, drag-and-drop для десктопа, клики для мобилы
 
-// Инициализация доски
-window.initBoard = function(playerColor) {
-    const boardConfig = {
+window.PIECE_SET_STORAGE_KEY = 'chess-piece-set';
+window.PIECE_SETS = {
+    alpha: {
+        label: 'Classic (Alpha CDN)',
+        theme: 'https://chessboardjs.com/img/chesspieces/alpha/{piece}.png'
+    },
+    custom: {
+        label: 'Custom (assets/pieces/custom)',
+        theme: 'assets/pieces/custom/{piece}.png'
+    }
+};
+
+window.getCurrentPieceTheme = function() {
+    const setName = localStorage.getItem(window.PIECE_SET_STORAGE_KEY) || 'alpha';
+    const selectedSet = window.PIECE_SETS[setName];
+
+    if (selectedSet && selectedSet.theme) {
+        return selectedSet.theme;
+    }
+
+    return window.PIECE_SETS.alpha.theme;
+};
+
+window.getBoardConfig = function() {
+    return {
         draggable: !window.isMobile,
         onDragStart: window.handleDragStart,
         onDrop: window.handleDrop,
@@ -11,10 +33,55 @@ window.initBoard = function(playerColor) {
         onMouseoverSquare: window.handleMouseoverSquare,
         position: 'start',
         moveSpeed: 200,  // Быстрая анимация
-        pieceTheme: 'https://chessboardjs.com/img/chesspieces/alpha/{piece}.png'
+        pieceTheme: window.getCurrentPieceTheme()
     };
-    
-    window.board = Chessboard('myBoard', boardConfig);
+};
+
+window.rebuildBoardWithCurrentState = function() {
+    const fen = window.game ? window.game.fen() : 'start';
+    const orientation = window.playerColor === 'b' ? 'black' : 'white';
+
+    if (window.board && typeof window.board.destroy === 'function') {
+        window.board.destroy();
+    }
+
+    window.board = Chessboard('myBoard', window.getBoardConfig());
+    window.board.position(fen, false);
+    window.board.orientation(orientation);
+
+    if (window.isMobile && window.playerColor) {
+        window.attachMobileClickHandler();
+    }
+};
+
+window.applyPieceSet = function(setName) {
+    const exists = Boolean(window.PIECE_SETS[setName]);
+    const safeSetName = exists ? setName : 'alpha';
+
+    localStorage.setItem(window.PIECE_SET_STORAGE_KEY, safeSetName);
+
+    if (window.board) {
+        window.rebuildBoardWithCurrentState();
+    }
+
+    return safeSetName;
+};
+
+window.initPieceSetControls = function(pieceSetSelect) {
+    if (!pieceSetSelect) return;
+
+    const savedSet = localStorage.getItem(window.PIECE_SET_STORAGE_KEY) || 'alpha';
+    pieceSetSelect.value = window.PIECE_SETS[savedSet] ? savedSet : 'alpha';
+
+    pieceSetSelect.addEventListener('change', (e) => {
+        const appliedSetName = window.applyPieceSet(e.target.value);
+        pieceSetSelect.value = appliedSetName;
+    });
+};
+
+// Инициализация доски
+window.initBoard = function(playerColor) {
+    window.board = Chessboard('myBoard', window.getBoardConfig());
     
     if (playerColor === 'b') window.board.orientation('black');
     
