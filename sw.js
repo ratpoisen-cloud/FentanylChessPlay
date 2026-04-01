@@ -5,13 +5,24 @@ const urlsToCache = [
   '/index.html',
   '/css/style.css',
   '/js/app.js',
-  '/js/chess-logic.js',
   '/js/firebase-config.js',
+  '/js/firebase.js',
+  '/js/auth.js',
+  '/js/board-ui.js',
+  '/js/controls.js',
+  '/js/ui.js',
+  '/js/game-core.js',
+  '/js/utils.js',
+  '/js/themes.js',
+  '/manifest.json',
+  '/favicon.ico',
+  '/assets/icon-192x192.png',
+  '/assets/icon-512x512.png',
   'https://code.jquery.com/jquery-3.5.1.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js',
-  'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js'
+  'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js',
+  'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css'
 ];
-
 // Установка Service Worker
 self.addEventListener('install', event => {
   event.waitUntil(
