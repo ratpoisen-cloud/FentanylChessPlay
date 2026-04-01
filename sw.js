@@ -1,5 +1,5 @@
 // sw.js - Service Worker для офлайн-режима
-const CACHE_NAME = 'chess-offline-v1';
+const CACHE_NAME = 'chess-offline-v2';
 const urlsToCache = [
   '/',
   '/index.html',
