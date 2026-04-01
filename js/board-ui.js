@@ -1,19 +1,27 @@
 // ==================== УПРАВЛЕНИЕ ДОСКОЙ ====================
 // Отвечает за: инициализацию доски, подсветку клеток, drag-and-drop для десктопа, клики для мобилы
 
-window.DEFAULT_PIECE_THEME = 'https://chessboardjs.com/img/chesspieces/alpha/{piece}.png';
 window.PIECE_SET_STORAGE_KEY = 'chess-piece-set';
-window.CUSTOM_PIECE_THEME_STORAGE_KEY = 'chess-piece-theme-template';
+window.PIECE_SETS = {
+    alpha: {
+        label: 'Classic (Alpha CDN)',
+        theme: 'https://chessboardjs.com/img/chesspieces/alpha/{piece}.png'
+    },
+    custom: {
+        label: 'Custom (assets/pieces/custom)',
+        theme: 'assets/pieces/custom/{piece}.png'
+    }
+};
 
 window.getCurrentPieceTheme = function() {
-    const setName = localStorage.getItem(window.PIECE_SET_STORAGE_KEY) || 'default';
-    const customTemplate = localStorage.getItem(window.CUSTOM_PIECE_THEME_STORAGE_KEY);
+    const setName = localStorage.getItem(window.PIECE_SET_STORAGE_KEY) || 'alpha';
+    const selectedSet = window.PIECE_SETS[setName];
 
-    if (setName === 'custom' && customTemplate && customTemplate.includes('{piece}')) {
-        return customTemplate;
+    if (selectedSet && selectedSet.theme) {
+        return selectedSet.theme;
     }
 
-    return window.DEFAULT_PIECE_THEME;
+    return window.PIECE_SETS.alpha.theme;
 };
 
 window.getBoardConfig = function() {
@@ -47,48 +55,27 @@ window.rebuildBoardWithCurrentState = function() {
 };
 
 window.applyPieceSet = function(setName) {
-    if (setName === 'custom') {
-        const currentValue = localStorage.getItem(window.CUSTOM_PIECE_THEME_STORAGE_KEY) || '';
-        const userTemplate = prompt(
-            'Вставьте URL-шаблон для фигурок (должен содержать {piece}).\nПример: https://example.com/pieces/{piece}.png',
-            currentValue
-        );
+    const exists = Boolean(window.PIECE_SETS[setName]);
+    const safeSetName = exists ? setName : 'alpha';
 
-        if (!userTemplate) {
-            return false;
-        }
-
-        const normalizedTemplate = userTemplate.trim();
-        if (!normalizedTemplate.includes('{piece}')) {
-            alert('Некорректный шаблон: в URL обязательно должно быть {piece}.');
-            return false;
-        }
-
-        localStorage.setItem(window.CUSTOM_PIECE_THEME_STORAGE_KEY, normalizedTemplate);
-        localStorage.setItem(window.PIECE_SET_STORAGE_KEY, 'custom');
-    } else {
-        localStorage.setItem(window.PIECE_SET_STORAGE_KEY, 'default');
-    }
+    localStorage.setItem(window.PIECE_SET_STORAGE_KEY, safeSetName);
 
     if (window.board) {
         window.rebuildBoardWithCurrentState();
     }
 
-    return true;
+    return safeSetName;
 };
 
 window.initPieceSetControls = function(pieceSetSelect) {
     if (!pieceSetSelect) return;
 
-    const savedSet = localStorage.getItem(window.PIECE_SET_STORAGE_KEY) || 'default';
-    pieceSetSelect.value = savedSet === 'custom' ? 'custom' : 'default';
+    const savedSet = localStorage.getItem(window.PIECE_SET_STORAGE_KEY) || 'alpha';
+    pieceSetSelect.value = window.PIECE_SETS[savedSet] ? savedSet : 'alpha';
 
     pieceSetSelect.addEventListener('change', (e) => {
-        const previousValue = localStorage.getItem(window.PIECE_SET_STORAGE_KEY) || 'default';
-        const applied = window.applyPieceSet(e.target.value);
-        if (!applied) {
-            pieceSetSelect.value = previousValue === 'custom' ? 'custom' : 'default';
-        }
+        const appliedSetName = window.applyPieceSet(e.target.value);
+        pieceSetSelect.value = appliedSetName;
     });
 };
 
