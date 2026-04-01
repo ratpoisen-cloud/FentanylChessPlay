@@ -37,9 +37,11 @@
     --btn-font-size: 0.95rem;
     --btn-radius: 16px;
 
-    --game-layout-gap: 20px;
-    --game-main-column-width: min(68vw, 760px);
-    --game-side-column-width: min(32vw, 360px);
+    --game-layout-gap: 12px;
+    --board-stack-gap: 12px;
+    --board-min-size: 320px;
+    --game-main-column-width: 760px;
+    --game-side-column-width: 360px;
 }
 
 * {
@@ -352,7 +354,7 @@ body {
 .game-layout-2col {
     width: 100%;
     display: grid;
-    grid-template-columns: minmax(0, var(--game-main-column-width)) minmax(280px, var(--game-side-column-width));
+    grid-template-columns: minmax(0, auto) minmax(280px, var(--game-side-column-width));
     gap: var(--game-layout-gap);
     align-items: start;
 }
@@ -363,18 +365,19 @@ body {
 }
 
 .game-main-column {
+    width: min(100%, var(--game-main-column-width));
     display: flex;
     flex-direction: column;
-    gap: var(--space-12);
 }
 
 .game-side-column {
     display: flex;
     flex-direction: column;
-    gap: var(--space-16);
+    gap: var(--board-stack-gap);
+    min-height: 0;
 }
 
-/* ===== ОСНОВНАЯ КОЛОНКА ===== */
+/* ===== ЛЕВАЯ КОЛОНКА ПРИВЯЗАНА К ДОСКЕ ===== */
 .board-area {
     width: 100%;
     max-width: none;
@@ -382,24 +385,32 @@ body {
     min-width: 0;
 }
 
-.game-status-header,
-.board-settings-bar,
+.game-status-header {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 var(--board-stack-gap) 0;
+}
+
+.board-settings-bar {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+}
+
 .board-wrapper {
     width: 100%;
     max-width: 100%;
-    margin-left: 0;
-    margin-right: 0;
-}
-
-/* ===== ДОСКА ===== */
-.board-wrapper {
+    margin: 0;
     position: relative;
 }
 
+/* ===== ДОСКА ===== */
 #myBoard {
     width: 100%;
     max-width: 100%;
     margin: 0;
+    min-width: var(--board-min-size);
+    min-height: var(--board-min-size);
     transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
@@ -651,11 +662,9 @@ body {
 
 /* ===== НАСТРОЙКИ ДОСКИ ===== */
 .board-settings-bar {
-    display: flex;
-    justify-content: flex-end;
     position: relative;
     min-height: 0;
-    margin-top: -8px;
+    height: 0;
 }
 
 .board-settings-menu {
@@ -727,7 +736,7 @@ body {
     transform: scale(0.96);
 }
 
-/* ===== ПРАВАЯ КОЛОНКА ===== */
+/* ===== ПРАВАЯ КОЛОНКА ПРИВЯЗАНА К ДОСКЕ ===== */
 .controls.controls-split,
 .game-bottom-panel {
     width: 100%;
@@ -738,13 +747,13 @@ body {
 .controls.controls-split {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-12);
+    gap: var(--board-stack-gap);
 }
 
 .controls-group {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-12);
+    gap: var(--board-stack-gap);
 }
 
 .controls-split .btn {
@@ -771,6 +780,14 @@ body {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    min-height: 0;
+}
+
+.moves-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1 1 auto;
 }
 
 .moves-card h3 {
@@ -913,8 +930,9 @@ body {
 
 .pgn-action-btn {
     flex: 1;
+    min-height: 40px;
     font-size: var(--font-size-xs);
-    padding: var(--space-8);
+    padding: 0 var(--space-8);
 }
 
 .game-modal-actions {
@@ -978,40 +996,46 @@ body.theme-middle-earth #myBoard {
 
 /* ===== LANDSCAPE / DESKTOP ===== */
 @media (orientation: landscape) {
+    .game-main-column {
+        width: clamp(var(--board-min-size), calc(100vh - 190px), var(--game-main-column-width));
+    }
+
     .game-layout-2col {
-        grid-template-columns: minmax(0, var(--game-main-column-width)) minmax(280px, var(--game-side-column-width));
-        gap: var(--game-layout-gap);
+        grid-template-columns: minmax(0, auto) minmax(280px, var(--game-side-column-width));
+        gap: var(--board-stack-gap);
         align-items: start;
     }
 
-    .game-main-column,
     .game-side-column {
-        width: auto;
+        height: clamp(var(--board-min-size), calc(100vh - 190px), var(--game-main-column-width));
+        align-self: start;
     }
 
-    .board-wrapper {
-        width: min(100%, calc(100vh - 220px));
+    .game-bottom-panel {
+        flex: 1 1 auto;
+        height: 100%;
     }
 
-    #myBoard {
-        width: 100%;
-        max-width: 100%;
+    .move-list-content {
+        flex: 1 1 auto;
+        height: auto;
+        min-height: 0;
     }
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
     :root {
-        --game-layout-gap: 12px;
-        --game-main-column-width: min(64vw, 640px);
-        --game-side-column-width: min(36vw, 300px);
-    }
-
-    .move-list-content {
-        height: 220px;
+        --game-side-column-width: 300px;
+        --board-min-size: 280px;
+        --board-stack-gap: 10px;
     }
 
     .game-bottom-panel {
         padding: 12px;
+    }
+
+    .move-list-content {
+        font-size: 0.8rem;
     }
 }
 
@@ -1024,11 +1048,10 @@ body.theme-middle-earth #myBoard {
     .game-main-column,
     .game-side-column {
         width: 100%;
+        height: auto;
     }
 
-    .board-area,
     .game-status-header,
-    .board-settings-bar,
     .board-wrapper,
     .controls.controls-split,
     .game-bottom-panel {
@@ -1037,18 +1060,27 @@ body.theme-middle-earth #myBoard {
         margin-right: auto;
     }
 
-    .board-wrapper {
-        width: 100%;
+    .game-bottom-panel {
+        height: auto;
     }
 
-    #myBoard {
-        width: 100%;
-        max-width: 100%;
+    .move-list-content {
+        height: 350px;
     }
 }
 
 /* ===== MOBILE ===== */
 @media (max-width: 600px) {
+    :root {
+        --board-min-size: 240px;
+        --board-stack-gap: 10px;
+        --btn-height: 44px;
+        --btn-height-lg: 44px;
+        --btn-padding-x: 12px;
+        --btn-font-size: 0.88rem;
+        --btn-radius: 14px;
+    }
+
     .main-container {
         padding: 8px;
     }
@@ -1127,15 +1159,18 @@ body.theme-middle-earth #myBoard {
     #myBoard {
         width: 100%;
         max-width: 100%;
+        min-width: 0;
+        min-height: 0;
     }
 
     .controls.controls-split {
         grid-template-columns: 1fr;
-        gap: var(--space-8);
+        gap: var(--board-stack-gap);
     }
 
     .controls-group {
         grid-template-columns: 1fr;
+        gap: var(--board-stack-gap);
     }
 
     .board-settings-menu {
