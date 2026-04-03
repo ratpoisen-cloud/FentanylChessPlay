@@ -10,6 +10,46 @@ window.currentRoomId = null;
 window.pendingTakeback = null;
 window.dragSourceSquare = null; // Добавляем переменную для drag-and-drop
 
+window.selectedCreateColor = 'w';
+
+window.getRequestedJoinColor = function() {
+    const colorParam = new URLSearchParams(window.location.search).get('color');
+    if (colorParam === 'w' || colorParam === 'b') return colorParam;
+    if (colorParam === 'random') return Math.random() < 0.5 ? 'w' : 'b';
+    return null;
+};
+
+window.applyCreateColorToggleStyles = function() {
+    const buttons = document.querySelectorAll('#create-color-toggle [data-color]');
+    buttons.forEach((btn) => {
+        const isActive = btn.dataset.color === window.selectedCreateColor;
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline');
+        btn.style.background = '';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+        btn.style.boxShadow = '';
+        btn.style.opacity = '';
+
+        if (!isActive) return;
+
+        if (btn.dataset.color === 'w') {
+            btn.style.background = 'linear-gradient(135deg, rgba(163, 193, 143, 0.35), rgba(163, 193, 143, 0.15))';
+            btn.style.borderColor = 'var(--accent)';
+            btn.style.color = '#0f110f';
+            btn.style.boxShadow = '0 0 18px var(--highlight-my-turn)';
+        } else if (btn.dataset.color === 'b') {
+            btn.style.background = 'rgba(255, 255, 255, 0.04)';
+            btn.style.borderColor = 'var(--border)';
+            btn.style.color = 'var(--text)';
+            btn.style.opacity = '0.9';
+        } else {
+            btn.classList.remove('btn-outline');
+            btn.classList.add('btn-primary');
+        }
+    });
+};
+
 
 // Проверка доступа: при текущих RLS игра доступна только авторизованным пользователям
 window.requireAuthForGame = async function() {
@@ -38,12 +78,22 @@ window.requireAuthForGame = async function() {
 window.initLobby = function() {
     document.getElementById('lobby-section').classList.remove('hidden');
     document.getElementById('game-section').classList.add('hidden');
+    const colorButtons = document.querySelectorAll('#create-color-toggle [data-color]');
+    colorButtons.forEach((btn) => {
+        btn.onclick = () => {
+            window.selectedCreateColor = btn.dataset.color;
+            window.applyCreateColorToggleStyles();
+        };
+    });
+    window.applyCreateColorToggleStyles();
+
     document.getElementById('create-game-btn').onclick = async () => {
         const user = await window.requireAuthForGame();
         if (!user) return;
 
         const id = window.generateRoomId();
-        location.href = location.origin + location.pathname + `?room=${id}`;
+        const color = window.selectedCreateColor || 'w';
+        location.href = location.origin + location.pathname + `?room=${id}&color=${encodeURIComponent(color)}`;
     };
 };
 
@@ -146,6 +196,7 @@ window.initGame = async function(roomId) {
     const uName = window.getUserName(user);
     const gameRef = window.getGameRef(roomId);
     const playersRef = window.getPlayersRef(roomId);
+    const requestedJoinColor = window.getRequestedJoinColor();
     
     window.game = new Chess();
     
@@ -154,10 +205,12 @@ window.initGame = async function(roomId) {
         await window.createGame(roomId, window.game.pgn(), window.game.fen());
     }
     
-    await window.addPlayerToGame(playersRef, uid, uName);
+    await window.addPlayerToGame(playersRef, uid, uName, requestedJoinColor);
     
     const p = (await get(playersRef)).val() || {};
-    window.playerColor = p.white === uid ? 'w' : (p.black === uid ? 'b' : null);
+    const assignedColor = p.white === uid ? 'w' : (p.black === uid ? 'b' : null);
+
+    window.playerColor = assignedColor;
     
     // Обновляем UI
     window.updatePlayerBadge();
