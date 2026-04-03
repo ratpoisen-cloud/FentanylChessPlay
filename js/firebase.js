@@ -201,20 +201,21 @@
         return { committed: true, snapshot: makeSnapshot(next) };
     };
 
-    const joinPlayerAtomically = async (roomId, uid, uName) => {
-        const { data, error } = await supabase.rpc('join_game_player', {
+    const joinPlayerAtomically = async (roomId, uid, uName, preferredColor = null) => {
+        const { data, error } = await supabase.rpc('join_game_player_with_color', {
             p_room_id: roomId,
             p_uid: uid,
-            p_name: uName
+            p_name: uName,
+            p_preferred_color: preferredColor
         });
 
         if (error) throw error;
         return data || null;
     };
 
-    window.addPlayerToGame = async function addPlayerToGame(playersRef, uid, uName) {
+    window.addPlayerToGame = async function addPlayerToGame(playersRef, uid, uName, preferredColor = null) {
         try {
-            return await joinPlayerAtomically(playersRef.roomId, uid, uName);
+            return await joinPlayerAtomically(playersRef.roomId, uid, uName, preferredColor);
         } catch (err) {
             console.error('Atomic addPlayerToGame error:', err);
             throw err;

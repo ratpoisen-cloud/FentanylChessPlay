@@ -168,3 +168,99 @@ $$;
 
 revoke all on function public.join_game_player(text, text, text) from public;
 grant execute on function public.join_game_player(text, text, text) to authenticated;
+
+-- Атомарное добавление игрока в комнату с приоритетом стороны.
+-- p_preferred_color:
+--   'w' -> сначала white, затем black
+--   'b' -> сначала black, затем white
+--   null/другое -> текущее поведение (white, затем black)
+create or replace function public.join_game_player_with_color(
+  p_room_id text,
+  p_uid text,
+  p_name text,
+  p_preferred_color text default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_players jsonb;
+  v_next_players jsonb;
+  v_first_slot text;
+  v_second_slot text;
+begin
+  if p_room_id is null or p_uid is null then
+    raise exception 'room_id и uid обязательны';
+  end if;
+
+  if auth.uid() is null or auth.uid()::text <> p_uid then
+    raise exception 'uid must match auth.uid()';
+  end if;
+
+  v_first_slot := case when p_preferred_color = 'b' then 'black' else 'white' end;
+  v_second_slot := case when v_first_slot = 'white' then 'black' else 'white' end;
+
+  select players
+  into v_players
+  from public.games
+  where room_id = p_room_id
+  for update;
+
+  if not found then
+    raise exception 'game % not found', p_room_id;
+  end if;
+
+  if v_players is null then
+    if v_first_slot = 'white' then
+      v_next_players := jsonb_build_object(
+        'white', p_uid,
+        'whiteName', coalesce(p_name, 'Игрок')
+      );
+    else
+      v_next_players := jsonb_build_object(
+        'black', p_uid,
+        'blackName', coalesce(p_name, 'Игрок')
+      );
+    end if;
+  elsif v_players->>'white' = p_uid or v_players->>'black' = p_uid then
+    return v_players;
+  elsif coalesce(v_players->>v_first_slot, '') = '' then
+    if v_first_slot = 'white' then
+      v_next_players := v_players || jsonb_build_object(
+        'white', p_uid,
+        'whiteName', coalesce(p_name, 'Игрок')
+      );
+    else
+      v_next_players := v_players || jsonb_build_object(
+        'black', p_uid,
+        'blackName', coalesce(p_name, 'Игрок')
+      );
+    end if;
+  elsif coalesce(v_players->>v_second_slot, '') = '' then
+    if v_second_slot = 'white' then
+      v_next_players := v_players || jsonb_build_object(
+        'white', p_uid,
+        'whiteName', coalesce(p_name, 'Игрок')
+      );
+    else
+      v_next_players := v_players || jsonb_build_object(
+        'black', p_uid,
+        'blackName', coalesce(p_name, 'Игрок')
+      );
+    end if;
+  else
+    return v_players;
+  end if;
+
+  update public.games
+  set players = v_next_players
+  where room_id = p_room_id;
+
+  return v_next_players;
+end;
+$$;
+
+revoke all on function public.join_game_player_with_color(text, text, text, text) from public;
+grant execute on function public.join_game_player_with_color(text, text, text, text) to authenticated;
