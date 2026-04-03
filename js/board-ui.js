@@ -58,6 +58,18 @@ window.getBoardConfig = function() {
     };
 };
 
+window.isReviewInteractionLocked = function() {
+    return Boolean(window.reviewMode);
+};
+
+window.resetTransientBoardInteractionState = function() {
+    window.dragSourceSquare = null;
+    window.selectedSquare = null;
+    window.pendingMove = null;
+    window.removeHighlights();
+    document.getElementById('confirm-move-box')?.classList.add('hidden');
+};
+
 window.rebuildBoardWithCurrentState = function() {
     const fen = window.game ? window.game.fen() : 'start';
     const orientation = window.playerColor === 'b' ? 'black' : 'white';
@@ -128,6 +140,11 @@ window.initBoard = function(playerColor) {
 
 // Проверка перед началом перетаскивания
 window.handleDragStart = function(source, piece, position, orientation) {
+    if (window.isReviewInteractionLocked()) {
+        window.resetTransientBoardInteractionState();
+        return false;
+    }
+
     if (window.game.game_over() || 
         !window.playerColor || 
         window.game.turn() !== window.playerColor || 
@@ -150,6 +167,7 @@ window.handleDragStart = function(source, piece, position, orientation) {
 // Подсветка при наведении на клетку
 window.handleMouseoverSquare = function(square, piece) {
     if (window.isMobile) return;
+    if (window.isReviewInteractionLocked()) return;
     if (!window.playerColor || window.game.game_over() || window.pendingMove) return;
     
     if (window.dragSourceSquare) return;
@@ -162,6 +180,10 @@ window.handleMouseoverSquare = function(square, piece) {
 // Убираем подсветку при уходе мыши
 window.handleMouseoutSquare = function(square, piece) {
     if (window.isMobile) return;
+    if (window.isReviewInteractionLocked()) {
+        window.removeTemporaryHighlights();
+        return;
+    }
     if (!window.dragSourceSquare) {
         window.removeTemporaryHighlights();
     }
@@ -169,6 +191,8 @@ window.handleMouseoutSquare = function(square, piece) {
 
 // Показ возможных ходов для фигуры
 window.showPossibleMoves = function(square) {
+    if (window.isReviewInteractionLocked()) return;
+
     window.removeTemporaryHighlights();
     window.highlightSquare(square, 'highlight-drag-source');
     
@@ -190,7 +214,12 @@ window.removeTemporaryHighlights = function() {
 // Обработка сброса фигуры (drag-and-drop)
 window.handleDrop = function(source, target) {
     if (window.isMobile) return 'snapback';
-    
+
+    if (window.isReviewInteractionLocked()) {
+        window.resetTransientBoardInteractionState();
+        return 'snapback';
+    }
+
     window.removeTemporaryHighlights();
     
     if (window.game.game_over() || !window.playerColor || window.game.turn() !== window.playerColor || window.pendingMove) {
@@ -234,6 +263,11 @@ window.attachMobileClickHandler = function() {
 
 // Мобильный клик
 window.handleMobileClick = function(square) {
+    if (window.isReviewInteractionLocked()) {
+        window.resetTransientBoardInteractionState();
+        return;
+    }
+
     if (window.game.game_over()) return;
     if (!window.playerColor) return;
     if (window.game.turn() !== window.playerColor) return;
@@ -273,6 +307,8 @@ window.handleMobileClick = function(square) {
 
 // Выделение фигуры и подсветка доступных ходов (для мобильной версии)
 window.selectSquare = function(square) {
+    if (window.isReviewInteractionLocked()) return;
+
     window.clearSelection();
     window.selectedSquare = square;
     window.highlightSquare(square, 'highlight-selected');

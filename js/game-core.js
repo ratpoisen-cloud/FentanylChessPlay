@@ -62,6 +62,7 @@ window.buildReviewDisplayGame = function(index) {
 window.enterReviewMode = function(startIndex) {
     if (!window.game) return;
 
+    window.resetTransientBoardInteractionState?.();
     window.reviewMode = true;
     window.syncReviewStateFromCurrentGame();
 
@@ -71,11 +72,10 @@ window.enterReviewMode = function(startIndex) {
 };
 
 window.exitReviewMode = function() {
+    window.resetTransientBoardInteractionState?.();
     window.reviewMode = false;
     window.reviewPlyIndex = null;
     window.reviewGame = null;
-
-    window.removeHighlights?.();
 
     if (!window.game) return;
 
