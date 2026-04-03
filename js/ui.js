@@ -57,35 +57,80 @@ window.updateMoveHistory = function() {
     moveListDiv.innerHTML = '';
     
     if (history.length === 0) {
-        moveListDiv.innerHTML = '<div style="grid-column: span 3; text-align: center; color: var(--text-secondary);">Нет ходов</div>';
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'move-list-cell move-list-cell--empty-state';
+        emptyCell.textContent = 'Нет ходов';
+        moveListDiv.appendChild(emptyCell);
         return;
     }
-    
-    for (let i = 0; i < history.length; i++) {
-        const moveNum = Math.floor(i / 2) + 1;
-        const isWhiteMove = i % 2 === 0;
-        
-        if (isWhiteMove) {
-            moveListDiv.innerHTML += `
-                <div style="color: var(--text-secondary);">${moveNum}.</div>
-                <div>${history[i].san || history[i]}</div>
-                <div></div>
-            `;
-        } else {
-            const lastRow = moveListDiv.lastElementChild;
-            if (lastRow && lastRow.children.length === 3) {
-                lastRow.children[2].innerHTML = history[i].san || history[i];
-            } else {
-                moveListDiv.innerHTML += `
-                    <div style="color: var(--text-secondary);">${moveNum}</div>
-                    <div></div>
-                    <div>${history[i].san || history[i]}</div>
-                `;
-            }
+
+    const maxPly = history.length;
+    const reviewIndex = Number.isInteger(window.reviewPlyIndex) ? window.reviewPlyIndex : maxPly;
+    const activePlyIndex = window.reviewMode
+        ? Math.max(0, Math.min(reviewIndex, maxPly))
+        : maxPly;
+    const fragment = document.createDocumentFragment();
+    let activeMoveCell = null;
+
+    const goToPlyFromHistory = (plyIndex) => {
+        if (typeof window.goToReviewPly !== 'function') return;
+        window.goToReviewPly(plyIndex);
+        // Локально обновляем список после навигации, т.к. goToReviewPly не вызывает updateUI.
+        window.updateMoveHistory();
+    };
+
+    const createCell = ({ text = '', plyIndex = null, isMoveNumber = false, isEmpty = false }) => {
+        const cell = document.createElement('div');
+        cell.classList.add('move-list-cell');
+        cell.textContent = text;
+
+        if (isMoveNumber) {
+            cell.classList.add('move-list-cell--move-number', 'move-list-cell--dimmed');
         }
+
+        if (isEmpty) {
+            cell.classList.add('move-list-cell--empty');
+        }
+
+        if (Number.isInteger(plyIndex)) {
+            cell.classList.add('move-list-cell--move');
+            cell.dataset.plyIndex = String(plyIndex);
+
+            if (plyIndex === activePlyIndex) {
+                cell.classList.add('move-list-cell--active');
+                activeMoveCell = cell;
+            }
+
+            cell.addEventListener('click', () => goToPlyFromHistory(plyIndex));
+        }
+
+        return cell;
+    };
+
+    for (let i = 0; i < history.length; i += 2) {
+        const moveNum = Math.floor(i / 2) + 1;
+        const whiteMove = history[i];
+        const blackMove = history[i + 1];
+
+        fragment.appendChild(createCell({ text: `${moveNum}.`, isMoveNumber: true }));
+        fragment.appendChild(createCell({
+            text: whiteMove?.san || whiteMove || '',
+            plyIndex: i + 1
+        }));
+        fragment.appendChild(createCell({
+            text: blackMove?.san || blackMove || '',
+            plyIndex: blackMove ? i + 2 : null,
+            isEmpty: !blackMove
+        }));
     }
-    
-    moveListDiv.scrollTop = moveListDiv.scrollHeight;
+
+    moveListDiv.appendChild(fragment);
+
+    if (window.reviewMode && activeMoveCell) {
+        activeMoveCell.scrollIntoView({ block: 'nearest' });
+    } else {
+        moveListDiv.scrollTop = moveListDiv.scrollHeight;
+    }
 };
 
 // Обновление модального окна окончания игры

@@ -917,6 +917,38 @@ body {
     border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
+.move-list-cell--move-number,
+.move-list-cell--dimmed {
+    color: var(--text-secondary);
+}
+
+.move-list-cell--move {
+    cursor: pointer;
+    user-select: none;
+    border-radius: 6px;
+    padding: 4px 6px;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.move-list-cell--move:hover {
+    background: rgba(16, 185, 129, 0.12);
+}
+
+.move-list-cell--active {
+    background: rgba(16, 185, 129, 0.2);
+    border-bottom-color: rgba(16, 185, 129, 0.75);
+}
+
+.move-list-cell--empty {
+    color: var(--text-secondary);
+}
+
+.move-list-cell--empty-state {
+    grid-column: span 3;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
 .game-share-box {
     margin-top: 0;
 }
