@@ -163,6 +163,13 @@ window.setupGameControls = function(gameRef, roomId) {
             window.updateReviewControlsState?.();
             return;
         }
+        const isLiveGame = !window.game.game_over();
+
+        if (isLiveGame) {
+            window.exitReviewMode();
+            return;
+        }
+
         window.goToReviewPly(maxPly);
     };
     
