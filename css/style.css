@@ -1448,6 +1448,10 @@ body.theme-middle-earth #myBoard {
         display: none;
     }
 
+    .main-container:has(#game-section:not(.hidden)) #back-to-lobby-btn-desktop {
+        display: none;
+    }
+
     .card {
         padding: 20px;
     }
