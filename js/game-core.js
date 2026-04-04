@@ -264,7 +264,11 @@ window.loadLobby = function(user) {
                 hasGames = true;
                 const isOver = data.gameState === 'game_over';
                 const myColor = p.white === user.uid ? 'white' : 'black';
+                const opponentUid = myColor === 'white' ? p.black : p.white;
+                const isWaitingForOpponent = !isOver && !opponentUid;
                 const opponent = (myColor === 'white') ? (p.blackName || "Ожидание...") : (p.whiteName || "Ожидание...");
+                const statusText = isOver ? 'Завершена' : (isWaitingForOpponent ? 'Ожидание соперника' : 'В процессе');
+                const canDeleteFromLobby = isOver || isWaitingForOpponent;
                 
                 // Получаем время последнего хода
                 const lastMoveTime = data.lastMoveTime || data.createdAt || 0;
@@ -277,14 +281,14 @@ window.loadLobby = function(user) {
                         <div>Против: <b>${opponent}</b></div>
                         <div class="game-meta">
                             <span class="game-id">${id}</span>
-                            <span class="game-status">${isOver ? 'Завершена' : 'В процессе'}</span>
+                            <span class="game-status">${statusText}</span>
                             <span class="game-time">${timeAgo}</span>
                         </div>
                         <small>Вы играете ${myColor === 'white' ? 'белыми' : 'черными'}</small>
                     </div>
                     <div class="game-actions">
                         <button class="btn btn-sm play-btn">Играть</button>
-                        <button class="btn btn-sm delete-btn ${isOver ? '' : 'hidden'}" data-game-id="${id}">Удалить</button>
+                        <button class="btn btn-sm delete-btn ${canDeleteFromLobby ? '' : 'hidden'}" data-game-id="${id}">Удалить</button>
                     </div>
                 `;
                 
@@ -295,7 +299,7 @@ window.loadLobby = function(user) {
                 };
                 
                 const deleteBtn = item.querySelector('.delete-btn');
-                if (deleteBtn && isOver) {
+                if (deleteBtn && canDeleteFromLobby) {
                     deleteBtn.onclick = (e) => {
                         e.stopPropagation();
                         window.deleteGame(id, user.uid);
@@ -532,10 +536,21 @@ window.deleteGame = async function(gameId, userId) {
     }
     
     const players = gameData.players;
-    if (players && (players.white === userId || players.black === userId)) {
+    const isParticipant = players && (players.white === userId || players.black === userId);
+    const isFinished = gameData.gameState === 'game_over';
+    const isWaitingOwned = players && (
+        (players.white === userId && !players.black) ||
+        (players.black === userId && !players.white)
+    );
+    const canDelete = isParticipant && (isFinished || isWaitingOwned);
+
+    if (canDelete) {
+        const deleteMessage = isWaitingOwned
+            ? `Удалить ожидающую партию ${gameId}? Это действие нельзя отменить.`
+            : `Удалить игру ${gameId}? Это действие нельзя отменить.`;
         const confirmDelete = await window.confirmAction({
             title: "Удаление партии",
-            message: `Удалить игру ${gameId}? Это действие нельзя отменить.`,
+            message: deleteMessage,
             confirmText: "Удалить",
             cancelText: "Отмена",
             danger: true
@@ -547,6 +562,8 @@ window.deleteGame = async function(gameId, userId) {
                 window.loadLobby(window.currentUser);
             }
         }
+    } else if (isParticipant) {
+        window.notify("Можно удалить только завершённую или ожидающую соперника партию", "error", 3200);
     } else {
         window.notify("У вас нет прав на удаление этой игры", "error", 3200);
     }
