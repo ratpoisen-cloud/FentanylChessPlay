@@ -333,6 +333,8 @@ if (!window.__boardReactionCleanupTimerStarted) {
 
 // Проверка перед началом перетаскивания
 window.handleDragStart = function(source, piece, position, orientation) {
+    window.closeBoardReactionPicker?.();
+
     if (window.isReviewInteractionLocked()) {
         window.resetTransientBoardInteractionState();
         return false;
@@ -407,6 +409,7 @@ window.removeTemporaryHighlights = function() {
 // Обработка сброса фигуры (drag-and-drop)
 window.handleDrop = function(source, target) {
     if (window.isMobile) return 'snapback';
+    window.closeBoardReactionPicker?.();
 
     if (window.isReviewInteractionLocked()) {
         window.resetTransientBoardInteractionState();
@@ -459,6 +462,7 @@ window.handleMobileClick = function(square) {
     if (Date.now() < window.boardReactionSuppressTapUntil) {
         return;
     }
+    window.closeBoardReactionPicker?.();
 
     if (window.isReviewInteractionLocked()) {
         window.resetTransientBoardInteractionState();
@@ -505,6 +509,7 @@ window.handleMobileClick = function(square) {
 // Выделение фигуры и подсветка доступных ходов (для мобильной версии)
 window.selectSquare = function(square) {
     if (window.isReviewInteractionLocked()) return;
+    window.closeBoardReactionPicker?.();
 
     window.clearSelection();
     window.selectedSquare = square;
