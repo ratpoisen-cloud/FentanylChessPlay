@@ -920,6 +920,15 @@ body {
     margin-bottom: var(--space-12);
 }
 
+.review-controls-inline {
+    margin-bottom: 0;
+}
+
+.controls-risky-bottom {
+    width: 100%;
+}
+
+
 .review-controls-buttons {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
