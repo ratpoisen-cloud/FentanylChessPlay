@@ -100,10 +100,14 @@ body {
 }
 
 .back-to-lobby-btn {
+    width: 34px;
+    min-width: 34px;
     min-height: 34px;
-    padding: 0 12px;
+    padding: 0;
     border-width: 1px;
-    font-size: 0.82rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    line-height: 1;
     opacity: 0.92;
 }
 
@@ -122,14 +126,17 @@ body {
 
 #back-to-lobby-btn-desktop {
     display: none;
-    width: auto;
-    min-width: 92px;
-    min-height: 32px;
-    padding: 0 10px;
-    font-size: 0.84rem;
     background: rgba(255, 255, 255, 0.03);
     border-color: rgba(255, 255, 255, 0.16);
+    color: var(--text-secondary);
     opacity: 0.9;
+}
+
+#back-to-lobby-btn-desktop:hover,
+#back-to-lobby-btn-mobile:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(163, 193, 143, 0.08);
 }
 
 .main-container:has(#game-section:not(.hidden)) #back-to-lobby-btn-desktop {
