@@ -159,19 +159,7 @@
                         <div class="controls controls-split">
                             <div class="controls-group controls-safe">
                                 <button id="takeback-btn" class="btn btn-outline btn-control-size">Отмена хода</button>
-                                <button id="exit-btn" class="btn btn-outline btn-control-size">В лобби</button>
-                            </div>
-
-                            <div class="controls-group controls-risky">
-                                <button id="draw-btn" class="btn btn-draw btn-control-size">Предложить ничью</button>
-                                <button id="resign-btn" class="btn btn-danger btn-control-size">Сдаться</button>
-                            </div>
-                        </div>
-
-                        <div class="game-bottom-panel">
-                            <div class="moves-card">
-                                <h3>История ходов</h3>
-                                <div class="review-controls" role="group" aria-label="Навигация по ходам">
+                                <div class="review-controls review-controls-inline" role="group" aria-label="Навигация по ходам">
                                     <div class="review-controls-buttons">
                                         <button id="review-first-btn" class="review-control-btn" type="button" aria-label="В начало партии">|&lt;</button>
                                         <button id="review-prev-btn" class="review-control-btn" type="button" aria-label="Назад на ход">&lt;</button>
@@ -181,7 +169,18 @@
                                     <button id="review-live-btn" class="review-control-btn review-live-btn" type="button">К текущей позиции</button>
                                     <p id="review-status" class="review-status">Последняя позиция</p>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="game-bottom-panel">
+                            <div class="moves-card">
+                                <h3>История ходов</h3>
                                 <div id="move-list" class="move-list-content"></div>
+                            </div>
+
+                            <div class="controls-group controls-risky controls-risky-bottom">
+                                <button id="draw-btn" class="btn btn-draw btn-control-size">Предложить ничью</button>
+                                <button id="resign-btn" class="btn btn-danger btn-control-size">Сдаться</button>
                             </div>
 
                             <div id="finished-game-actions" class="finished-game-actions hidden" role="group" aria-label="Действия завершённой партии">

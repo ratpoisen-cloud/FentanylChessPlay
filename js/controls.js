@@ -180,17 +180,20 @@ window.setupGameControls = function(gameRef, roomId) {
     };
     
     // Выход в лобби
-    document.getElementById('exit-btn').onclick = async () => {
-        const shouldExit = await window.confirmAction({
-            title: "Выйти в лобби?",
-            message: "Текущая партия останется сохранённой.",
-            confirmText: "Выйти",
-            cancelText: "Остаться"
-        });
-        if (shouldExit) {
-            location.href = location.origin + location.pathname;
-        }
-    };
+    const exitBtn = document.getElementById('exit-btn');
+    if (exitBtn) {
+        exitBtn.onclick = async () => {
+            const shouldExit = await window.confirmAction({
+                title: "Выйти в лобби?",
+                message: "Текущая партия останется сохранённой.",
+                confirmText: "Выйти",
+                cancelText: "Остаться"
+            });
+            if (shouldExit) {
+                location.href = location.origin + location.pathname;
+            }
+        };
+    }
     
     // Поделиться ссылкой
     document.getElementById('share-btn').onclick = async () => {
