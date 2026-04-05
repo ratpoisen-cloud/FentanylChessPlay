@@ -54,7 +54,10 @@ window.setupAuth = function() {
     });
 
     avatarFileInput?.addEventListener('change', () => {
-        window.notify('Загрузка аватара скоро появится', 'info');
+        const selectedFile = avatarFileInput.files?.[0] || null;
+        if (selectedFile) {
+            console.log('[Avatar] selected file:', selectedFile);
+        }
         avatarFileInput.value = '';
     });
 
