@@ -246,6 +246,30 @@ window.getRequestedJoinColor = function() {
     return null;
 };
 
+window.applyRemotePgnUpdate = function(pgn) {
+    if (!window.game || !pgn || pgn === window.game.pgn()) return false;
+
+    window.game.load_pgn(pgn);
+    window.syncReviewStateFromCurrentGame();
+
+    window.pendingMove = null;
+    window.dragSourceSquare = null;
+    document.getElementById('confirm-move-box').classList.add('hidden');
+    window.removeHighlights?.();
+
+    if (window.reviewMode) {
+        window.goToReviewPly(window.reviewPlyIndex);
+    } else {
+        window.updateBoardPosition(window.game.fen(), true);
+        const history = window.game.history({ verbose: true });
+        if (history.length > 0 && window.highlightLastMove) {
+            window.highlightLastMove(history[history.length - 1]);
+        }
+    }
+
+    return true;
+};
+
 // Проверка доступа: при текущих RLS игра доступна только авторизованным пользователям
 window.requireAuthForGame = async function() {
     if (window.currentUser) return window.currentUser;
@@ -602,25 +626,7 @@ window.initGame = async function(roomId) {
         const data = snap.val();
         if (!data) return;
         window.setActiveReactionsFromState(data.reactions || []);
-        if (data.pgn && data.pgn !== window.game.pgn()) {
-            window.game.load_pgn(data.pgn);
-            window.syncReviewStateFromCurrentGame();
-
-            window.pendingMove = null;
-            window.dragSourceSquare = null;
-            document.getElementById('confirm-move-box').classList.add('hidden');
-            window.removeHighlights?.();
-
-            if (window.reviewMode) {
-                window.goToReviewPly(window.reviewPlyIndex);
-            } else {
-                window.updateBoardPosition(window.game.fen(), true);
-                const history = window.game.history({ verbose: true });
-                if (history.length > 0 && window.highlightLastMove) {
-                    window.highlightLastMove(history[history.length - 1]);
-                }
-            }
-        }
+        window.applyRemotePgnUpdate(data.pgn);
         window.updateUI(data);
     });
     
