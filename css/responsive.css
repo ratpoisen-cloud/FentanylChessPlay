@@ -12,7 +12,7 @@
     }
 
     .game-layout-2col {
-        grid-template-columns: minmax(0, auto) minmax(280px, var(--game-side-column-width));
+        grid-template-columns: minmax(0, 1fr) minmax(280px, var(--game-side-column-width));
         gap: var(--board-stack-gap);
         align-items: start;
     }
@@ -31,6 +31,44 @@
         flex: 1 1 auto;
         height: auto;
         min-height: 0;
+    }
+}
+
+@media (max-width: 1180px) {
+    .game-layout-2col {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--board-stack-gap);
+    }
+
+    .game-main-column,
+    .game-side-column {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+    }
+
+    .board-area,
+    .board-wrapper {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    #myBoard {
+        width: min(100%, var(--game-main-column-width));
+        max-width: 100%;
+        min-width: 0;
+        min-height: 0;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .game-bottom-panel {
+        height: auto;
+    }
+
+    .move-list-content {
+        height: 280px;
     }
 }
 

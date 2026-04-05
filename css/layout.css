@@ -16,6 +16,7 @@
     grid-template-columns: minmax(0, auto) minmax(280px, var(--game-side-column-width));
     gap: var(--game-layout-gap);
     align-items: start;
+    min-width: 0;
 }
 
 .game-main-column,
@@ -60,6 +61,7 @@
     max-width: 100%;
     margin: 0;
     position: relative;
+    min-width: 0;
 }
 
 .controls.controls-split,
