@@ -294,57 +294,156 @@ window.requireAuthForGame = async function() {
 };
 
 // Лобби
-window.initLobby = function() {
-    document.getElementById('lobby-section').classList.remove('hidden');
-    document.getElementById('game-section').classList.add('hidden');
-    const createGameModal = document.getElementById('create-game-modal');
-    const colorButtons = document.querySelectorAll('[data-create-color]');
-    const gamesViewBtn = document.getElementById('lobby-view-games');
-    const playersViewBtn = document.getElementById('lobby-view-players');
-    const gamesList = document.getElementById('games-list');
-    const playersList = document.getElementById('players-list');
-    const clearFinishedBtn = document.getElementById('clear-finished-btn');
-    const closeCreateGameModal = () => {
-        createGameModal?.classList.add('hidden');
+function getLobbyNodes() {
+    return {
+        lobbySection: document.getElementById('lobby-section'),
+        gameSection: document.getElementById('game-section'),
+        createGameBtn: document.getElementById('create-game-btn'),
+        createGameModal: document.getElementById('create-game-modal'),
+        createGameCancelBtn: document.getElementById('create-game-modal-cancel'),
+        colorButtons: document.querySelectorAll('[data-create-color]'),
+        gamesViewBtn: document.getElementById('lobby-view-games'),
+        playersViewBtn: document.getElementById('lobby-view-players'),
+        gamesList: document.getElementById('games-list'),
+        playersList: document.getElementById('players-list'),
+        clearFinishedBtn: document.getElementById('clear-finished-btn')
     };
-    const updateLobbyView = () => {
-        const isGamesView = window.lobbyViewMode !== 'players';
-        gamesList?.classList.toggle('hidden', !isGamesView);
-        playersList?.classList.toggle('hidden', isGamesView);
-        gamesViewBtn?.classList.toggle('active', isGamesView);
-        playersViewBtn?.classList.toggle('active', !isGamesView);
-        clearFinishedBtn?.classList.toggle('hidden', !isGamesView);
+}
+
+function applyLobbyViewMode(nodes) {
+    const isGamesView = window.lobbyViewMode !== 'players';
+    nodes.gamesList?.classList.toggle('hidden', !isGamesView);
+    nodes.playersList?.classList.toggle('hidden', isGamesView);
+    nodes.gamesViewBtn?.classList.toggle('active', isGamesView);
+    nodes.playersViewBtn?.classList.toggle('active', !isGamesView);
+    nodes.clearFinishedBtn?.classList.toggle('hidden', !isGamesView);
+}
+
+function closeCreateGameModal(modal) {
+    modal?.classList.add('hidden');
+}
+
+function buildLobbyEmptyState() {
+    return {
+        games: '<div class="empty-lobby">Нет активных партий</div>',
+        players: '<div class="empty-lobby">Нет соперников<br><small>Сыграйте первую партию</small></div>'
+    };
+}
+
+function sortLobbyGames(games) {
+    return Object.entries(games).sort((a, b) => {
+        const aData = a[1];
+        const bData = b[1];
+        const aOver = aData.gameState === 'game_over';
+        const bOver = bData.gameState === 'game_over';
+
+        if (aOver === bOver) {
+            const aTime = aData.lastMoveTime || aData.createdAt || 0;
+            const bTime = bData.lastMoveTime || bData.createdAt || 0;
+            return bTime - aTime;
+        }
+
+        return aOver ? 1 : -1;
+    });
+}
+
+function buildLobbyGameCardData(id, data, userId) {
+    const players = data.players;
+    if (!players || (players.white !== userId && players.black !== userId)) return null;
+
+    const isOver = data.gameState === 'game_over';
+    const myColor = players.white === userId ? 'white' : 'black';
+    const opponentUid = myColor === 'white' ? players.black : players.white;
+    const isWaitingForOpponent = !isOver && !opponentUid;
+    const opponent = myColor === 'white' ? (players.blackName || 'Ожидание...') : (players.whiteName || 'Ожидание...');
+    const statusText = isOver ? 'Завершена' : (isWaitingForOpponent ? 'Ожидание соперника' : 'В процессе');
+
+    return {
+        id,
+        isOver,
+        myColor,
+        opponent,
+        statusText,
+        canDeleteFromLobby: isOver || isWaitingForOpponent,
+        timeAgo: window.formatTimeAgo(data.lastMoveTime || data.createdAt || 0)
+    };
+}
+
+function createLobbyGameElement(cardData, userId) {
+    const item = document.createElement('div');
+    item.className = `game-item ${cardData.isOver ? 'finished' : 'active'}`;
+    item.innerHTML = `
+        <div class="game-info">
+            <div>Против: <b>${cardData.opponent}</b></div>
+            <div class="game-meta">
+                <span class="game-id">${cardData.id}</span>
+                <span class="game-status">${cardData.statusText}</span>
+                <span class="game-time">${cardData.timeAgo}</span>
+            </div>
+            <small>Вы играете ${cardData.myColor === 'white' ? 'белыми' : 'черными'}</small>
+        </div>
+        <div class="game-actions">
+            <button class="btn btn-sm play-btn">Играть</button>
+            <button class="btn btn-sm delete-btn ${cardData.canDeleteFromLobby ? '' : 'hidden'}" data-game-id="${cardData.id}">Удалить</button>
+        </div>
+    `;
+
+    item.querySelector('.play-btn').onclick = (event) => {
+        event.stopPropagation();
+        location.href = `${location.origin}${location.pathname}?room=${cardData.id}`;
     };
 
-    document.getElementById('create-game-btn').onclick = async () => {
+    const deleteBtn = item.querySelector('.delete-btn');
+    if (deleteBtn && cardData.canDeleteFromLobby) {
+        deleteBtn.onclick = (event) => {
+            event.stopPropagation();
+            window.deleteGame(cardData.id, userId);
+        };
+    }
+
+    return item;
+}
+
+function resetLobbyContainers(gamesList, playersList) {
+    gamesList.innerHTML = '';
+    playersList.innerHTML = '';
+}
+
+window.initLobby = function() {
+    const nodes = getLobbyNodes();
+    nodes.lobbySection?.classList.remove('hidden');
+    nodes.gameSection?.classList.add('hidden');
+
+    nodes.createGameBtn.onclick = async () => {
         const user = await window.requireAuthForGame();
         if (!user) return;
 
-        createGameModal?.classList.remove('hidden');
+        nodes.createGameModal?.classList.remove('hidden');
     };
 
-    colorButtons.forEach((btn) => {
+    nodes.colorButtons.forEach((btn) => {
         btn.onclick = () => {
             const id = window.generateRoomId();
             const color = btn.dataset.createColor;
-            closeCreateGameModal();
+            closeCreateGameModal(nodes.createGameModal);
             location.href = location.origin + location.pathname + `?room=${id}&color=${encodeURIComponent(color)}`;
         };
     });
 
-    document.getElementById('create-game-modal-cancel').onclick = closeCreateGameModal;
-    createGameModal.onclick = (event) => {
-        if (event.target === createGameModal) closeCreateGameModal();
+    nodes.createGameCancelBtn.onclick = () => closeCreateGameModal(nodes.createGameModal);
+    nodes.createGameModal.onclick = (event) => {
+        if (event.target === nodes.createGameModal) closeCreateGameModal(nodes.createGameModal);
     };
-    gamesViewBtn.onclick = () => {
+    nodes.gamesViewBtn.onclick = () => {
         window.lobbyViewMode = 'games';
-        updateLobbyView();
+        applyLobbyViewMode(nodes);
     };
-    playersViewBtn.onclick = () => {
+    nodes.playersViewBtn.onclick = () => {
         window.lobbyViewMode = 'players';
-        updateLobbyView();
+        applyLobbyViewMode(nodes);
     };
-    updateLobbyView();
+
+    applyLobbyViewMode(nodes);
 };
 
 // Загрузка игр в лобби
@@ -352,87 +451,26 @@ window.loadLobby = function(user) {
     const gamesList = document.getElementById('games-list');
     const playersList = document.getElementById('players-list');
     window.watchGames((snap) => {
-        gamesList.innerHTML = '';
-        playersList.innerHTML = '';
+        resetLobbyContainers(gamesList, playersList);
         const games = snap.val();
-        if (!games) { 
-            gamesList.innerHTML = '<div class="empty-lobby">Нет активных партий</div>'; 
-            playersList.innerHTML = '<div class="empty-lobby">Нет соперников<br><small>Сыграйте первую партию</small></div>';
-            return; 
+        if (!games) {
+            const empty = buildLobbyEmptyState();
+            gamesList.innerHTML = empty.games;
+            playersList.innerHTML = empty.players;
+            return;
         }
-        
-        // Сортировка: сначала активные по последнему ходу (сначала свежие), потом завершённые по последнему ходу
-        const sortedGames = Object.entries(games).sort((a, b) => {
-            const aData = a[1];
-            const bData = b[1];
-            const aOver = aData.gameState === 'game_over';
-            const bOver = bData.gameState === 'game_over';
-            
-            // Если обе активные или обе завершённые - сортируем по времени последнего хода (сначала свежие)
-            if (aOver === bOver) {
-                const aTime = aData.lastMoveTime || aData.createdAt || 0;
-                const bTime = bData.lastMoveTime || bData.createdAt || 0;
-                return bTime - aTime;  // По убыванию (сначала новые)
-            }
-            
-            // Активные игры выше завершённых
-            return aOver ? 1 : -1;
-        });
-        
-        let hasGames = false;
-        
-        sortedGames.forEach(([id, data]) => {
-            const p = data.players;
-            if (p && (p.white === user.uid || p.black === user.uid)) {
-                hasGames = true;
-                const isOver = data.gameState === 'game_over';
-                const myColor = p.white === user.uid ? 'white' : 'black';
-                const opponentUid = myColor === 'white' ? p.black : p.white;
-                const isWaitingForOpponent = !isOver && !opponentUid;
-                const opponent = (myColor === 'white') ? (p.blackName || "Ожидание...") : (p.whiteName || "Ожидание...");
-                const statusText = isOver ? 'Завершена' : (isWaitingForOpponent ? 'Ожидание соперника' : 'В процессе');
-                const canDeleteFromLobby = isOver || isWaitingForOpponent;
-                
-                // Получаем время последнего хода
-                const lastMoveTime = data.lastMoveTime || data.createdAt || 0;
-                const timeAgo = window.formatTimeAgo(lastMoveTime);
 
-                const item = document.createElement('div');
-                item.className = `game-item ${isOver ? 'finished' : 'active'}`;
-                item.innerHTML = `
-                    <div class="game-info">
-                        <div>Против: <b>${opponent}</b></div>
-                        <div class="game-meta">
-                            <span class="game-id">${id}</span>
-                            <span class="game-status">${statusText}</span>
-                            <span class="game-time">${timeAgo}</span>
-                        </div>
-                        <small>Вы играете ${myColor === 'white' ? 'белыми' : 'черными'}</small>
-                    </div>
-                    <div class="game-actions">
-                        <button class="btn btn-sm play-btn">Играть</button>
-                        <button class="btn btn-sm delete-btn ${canDeleteFromLobby ? '' : 'hidden'}" data-game-id="${id}">Удалить</button>
-                    </div>
-                `;
-                
-                const playBtn = item.querySelector('.play-btn');
-                playBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    location.href = location.origin + location.pathname + `?room=${id}`;
-                };
-                
-                const deleteBtn = item.querySelector('.delete-btn');
-                if (deleteBtn && canDeleteFromLobby) {
-                    deleteBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        window.deleteGame(id, user.uid);
-                    };
-                }
-                
-                gamesList.appendChild(item);
-            }
+        const sortedGames = sortLobbyGames(games);
+        let hasGames = false;
+
+        sortedGames.forEach(([id, data]) => {
+            const cardData = buildLobbyGameCardData(id, data, user.uid);
+            if (!cardData) return;
+
+            hasGames = true;
+            gamesList.appendChild(createLobbyGameElement(cardData, user.uid));
         });
-        
+
         if (!hasGames) {
             gamesList.innerHTML = '<div class="empty-lobby">Нет активных партий<br><small>Создайте новую игру!</small></div>';
         }
@@ -579,6 +617,49 @@ window.renderPlayersLobby = function(container, players) {
 };
 
 // Инициализация игры
+function setGameSectionVisibility() {
+    document.getElementById('game-section').classList.remove('hidden');
+    document.getElementById('lobby-section').classList.add('hidden');
+}
+
+function initLocalGameState() {
+    window.game = new Chess();
+    window.lastKnownGameState = null;
+    window.lastRenderedMoveHistoryLength = 0;
+    window.syncReviewStateFromCurrentGame();
+    window.activeReactions = [];
+    window.reactionRateLimitState = { cycleKey: window.getReactionCycleKey(), count: 0 };
+}
+
+async function ensureGameExists(gameRef, roomId) {
+    const gameCheck = await get(gameRef);
+    if (!gameCheck.exists()) {
+        await window.createGame(roomId, window.game.pgn(), window.game.fen());
+    }
+}
+
+function resolveAssignedColor(players, uid) {
+    if (players.white === uid) return 'w';
+    if (players.black === uid) return 'b';
+    return null;
+}
+
+function applyAssignedColorToBoard() {
+    window.updatePlayerBadge();
+    window.initBoard(window.playerColor);
+    if (window.playerColor === 'b') window.board.orientation('black');
+}
+
+function subscribeToGameUpdates(gameRef) {
+    window.watchGame(gameRef, (snap) => {
+        const data = snap.val();
+        if (!data) return;
+        window.setActiveReactionsFromState(data.reactions || []);
+        window.applyRemotePgnUpdate(data.pgn);
+        window.updateUI(data);
+    });
+}
+
 window.initGame = async function(roomId) {
     const user = await window.requireAuthForGame();
     if (!user) {
@@ -586,8 +667,7 @@ window.initGame = async function(roomId) {
         return;
     }
 
-    document.getElementById('game-section').classList.remove('hidden');
-    document.getElementById('lobby-section').classList.add('hidden');
+    setGameSectionVisibility();
     document.getElementById('room-link').value = window.location.href;
     
     const uid = window.getUserId(user);
@@ -596,44 +676,38 @@ window.initGame = async function(roomId) {
     const playersRef = window.getPlayersRef(roomId);
     const requestedJoinColor = window.getRequestedJoinColor();
     
-    window.game = new Chess();
-    window.lastKnownGameState = null;
-    window.lastRenderedMoveHistoryLength = 0;
-    window.syncReviewStateFromCurrentGame();
-    window.activeReactions = [];
-    window.reactionRateLimitState = { cycleKey: window.getReactionCycleKey(), count: 0 };
-    
-    const gameCheck = await get(gameRef);
-    if (!gameCheck.exists()) {
-        await window.createGame(roomId, window.game.pgn(), window.game.fen());
-    }
-    
+    initLocalGameState();
+    await ensureGameExists(gameRef, roomId);
     await window.addPlayerToGame(playersRef, uid, uName, requestedJoinColor);
     
     const p = (await get(playersRef)).val() || {};
-    const assignedColor = p.white === uid ? 'w' : (p.black === uid ? 'b' : null);
-
-    window.playerColor = assignedColor;
-    
-    // Обновляем UI
-    window.updatePlayerBadge();
-    window.initBoard(window.playerColor);
-    
-    if (window.playerColor === 'b') window.board.orientation('black');
-    
-    // Синхронизация игры
-    window.watchGame(gameRef, (snap) => {
-        const data = snap.val();
-        if (!data) return;
-        window.setActiveReactionsFromState(data.reactions || []);
-        window.applyRemotePgnUpdate(data.pgn);
-        window.updateUI(data);
-    });
+    window.playerColor = resolveAssignedColor(p, uid);
+    applyAssignedColorToBoard();
+    subscribeToGameUpdates(gameRef);
     
     window.setupGameControls(gameRef, roomId);
     window.currentRoomId = roomId;
 };
 // Функция удаления одной игры
+function canDeleteGameByState(gameData, userId) {
+    const players = gameData.players;
+    const isParticipant = players && (players.white === userId || players.black === userId);
+    const isFinished = gameData.gameState === 'game_over';
+    const isWaitingOwned = players && (
+        (players.white === userId && !players.black) ||
+        (players.black === userId && !players.white)
+    );
+
+    return { players, isParticipant, isFinished, isWaitingOwned, canDelete: isParticipant && (isFinished || isWaitingOwned) };
+}
+
+function notifyAndReloadLobby(message, type, timeout) {
+    window.notify(message, type, timeout);
+    if (window.currentUser) {
+        window.loadLobby(window.currentUser);
+    }
+}
+
 window.deleteGame = async function(gameId, userId) {
     const gameRef = window.getGameRef(gameId);
     const gameData = (await get(gameRef)).val();
@@ -643,14 +717,7 @@ window.deleteGame = async function(gameId, userId) {
         return;
     }
     
-    const players = gameData.players;
-    const isParticipant = players && (players.white === userId || players.black === userId);
-    const isFinished = gameData.gameState === 'game_over';
-    const isWaitingOwned = players && (
-        (players.white === userId && !players.black) ||
-        (players.black === userId && !players.white)
-    );
-    const canDelete = isParticipant && (isFinished || isWaitingOwned);
+    const { isParticipant, isWaitingOwned, canDelete } = canDeleteGameByState(gameData, userId);
 
     if (canDelete) {
         const deleteMessage = isWaitingOwned
@@ -665,10 +732,7 @@ window.deleteGame = async function(gameId, userId) {
         });
         if (confirmDelete) {
             await set(gameRef, null);
-            window.notify("Игра удалена", "success");
-            if (window.currentUser) {
-                window.loadLobby(window.currentUser);
-            }
+            notifyAndReloadLobby("Игра удалена", "success");
         }
     } else if (isParticipant) {
         window.notify("Можно удалить только завершённую или ожидающую соперника партию", "error", 3200);
@@ -677,11 +741,19 @@ window.deleteGame = async function(gameId, userId) {
     }
 };
 // Функция отправки запроса на ничью
+function hideDrawRequestBox() {
+    document.getElementById('draw-request-box').classList.add('hidden');
+}
+
+function getCurrentUserDisplayName() {
+    return window.currentUser?.displayName || window.currentUser?.email?.split('@')[0] || 'Игрок';
+}
+
 window.sendDrawRequest = async function(gameRef, roomId) {
     const currentTurn = window.game.turn();
     const request = {
         from: window.playerColor,
-        fromName: window.currentUser?.displayName || window.currentUser?.email?.split('@')[0] || 'Игрок',
+        fromName: getCurrentUserDisplayName(),
         timestamp: Date.now(),
         turn: currentTurn
     };
@@ -704,7 +776,7 @@ window.acceptDraw = async function(gameRef, roomId) {
         pgn: window.game.pgn()
     };
     await window.updateGame(gameRef, updateData);
-    document.getElementById('draw-request-box').classList.add('hidden');
+    hideDrawRequestBox();
     window.pendingDraw = null;
     window.notify("Игра закончилась ничьей", "success");
 };
@@ -712,11 +784,16 @@ window.acceptDraw = async function(gameRef, roomId) {
 // Функция отклонения ничьей
 window.rejectDraw = async function(gameRef, roomId) {
     await window.updateGame(gameRef, { drawRequest: null });
-    document.getElementById('draw-request-box').classList.add('hidden');
+    hideDrawRequestBox();
     window.pendingDraw = null;
     window.notify("Соперник отклонил запрос на ничью", "info");
 };
 // Функция массового удаления завершённых игр
+function isFinishedGameForUser(data, userId) {
+    const players = data.players;
+    return data.gameState === 'game_over' && players && (players.white === userId || players.black === userId);
+}
+
 window.clearFinishedGames = async function(userId) {
     const games = (await get(ref(window.db, `games`))).val();
     if (!games) return;
@@ -724,20 +801,14 @@ window.clearFinishedGames = async function(userId) {
     let deletedCount = 0;
     
     for (const [gameId, data] of Object.entries(games)) {
-        const players = data.players;
-        const isOver = data.gameState === 'game_over';
-        
-        if (isOver && players && (players.white === userId || players.black === userId)) {
+        if (isFinishedGameForUser(data, userId)) {
             await set(window.getGameRef(gameId), null);
             deletedCount++;
         }
     }
     
     if (deletedCount > 0) {
-        window.notify(`Удалено ${deletedCount} завершённых игр`, "success", 3200);
-        if (window.currentUser) {
-            window.loadLobby(window.currentUser);
-        }
+        notifyAndReloadLobby(`Удалено ${deletedCount} завершённых игр`, "success", 3200);
     } else {
         window.notify("Нет завершённых игр для удаления", "info");
     }
