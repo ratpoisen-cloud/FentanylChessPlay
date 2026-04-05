@@ -140,6 +140,22 @@
     color: #ffb3b3;
 }
 
+
+.user-menu-setting {
+    padding: 10px 14px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.user-menu-setting label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
 .auth-group {
     display: flex;
     gap: 12px;

@@ -7,7 +7,9 @@ window.initBoardSettingsControls = function() {
     const toggleBtn = document.getElementById('board-settings-toggle');
     const menu = document.getElementById('board-settings-menu');
     const themeSelect = document.getElementById('theme-select');
-    const uiThemeSelect = document.getElementById('ui-theme-select');
+    const uiThemeSelect =
+        document.getElementById('ui-theme-select') ||
+        document.getElementById('user-ui-theme-select');
     const pieceSetSelect = document.getElementById('piece-set-select');
 
     if (toggleBtn && menu) {
